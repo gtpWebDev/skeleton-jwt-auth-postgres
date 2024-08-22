@@ -7,10 +7,9 @@ const userRouter = require("./userRoutes");
 
 router.use("/user", userRouter);
 
-/* GET home page. */
-router.get("/", function (req, res, next) {
-  // render the "index" view, with the given parameters
-  res.render("index", { title: "Account Home Page" });
+// Test backend up and running
+router.get("/", (req, res, next) => {
+  res.status(200).json({ msg: "test - backend service live" });
 });
 
 module.exports = router;

@@ -151,14 +151,15 @@ Allows requests to be carried out from other domain names - e.g. separate react 
 npm install cors
 ```
 
-## Install Async Error Handler
+## Install Useful Express Middleware
 
 express-async-handler is a simplifying library that gives a short hand for error catching, replacing a try catch structure which sends the error to the next middleware on error
 
-express-ejs-layouts - update once know
+express-validator is for validating the content of requests - body, params, query
 
 ```bash
 npm install express-async-handler
+npm install express-validator
 ```
 
 ## Add directory structure
@@ -179,12 +180,15 @@ Install **crypto** to generate the salt and hash at registration, and to validat
 npm install passport
 npm install passport-local
 npm install crypto
+npm install passport-jwt
+npm install jsonwebtoken
 ```
 
 The following files and elements represent the authorisation and database setup:
 **app.js** - review thoroughly to ensure comfortable with contents
 **config/passport.js**
 **routes/indexRoutes.js**
+**routes/userRoutes.js**
 **controllers/userController.js**
 **utils/authMiddleware.js**
 **utils/generateKeyPair.js**
@@ -211,7 +215,7 @@ MIICCgKCAgEApZ3krY0pIX+xGt0VryRqpdEWZaNJsgT5Ea8T/T4jGT85FasNJKRG
 
 ## Setting up the postgres database
 
-Add the Prima CLI as a development dependency
+Add the Prisma CLI as a development dependency
 
 ```bash
 npm install prisma --save-dev
@@ -316,7 +320,7 @@ datasource db {
 
 model User {
   id         Int      @id @default(autoincrement())
-  username   String
+  username   String   @unique
   salt       String
   hash       String
   admin      Boolean  @default(false)

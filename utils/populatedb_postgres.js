@@ -1,6 +1,6 @@
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
+// const { PrismaClient } = require("@prisma/client");
+// const prisma = new PrismaClient();
+const prisma = require("../config/prismaClient");
 
 async function main() {
   await createSingleRecord();
@@ -21,7 +21,7 @@ async function createSingleRecord() {
   // returns a PrismaPromise
   const user = await prisma.user.create({
     data: {
-      username: "glen",
+      username: "john",
       salt: "gfgfgfgfgf",
       hash: "hsjdshdjsdhjs",
     },

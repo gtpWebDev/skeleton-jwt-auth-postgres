@@ -1,19 +1,16 @@
-const passport = require("passport");
-const User = require("../models/userModel");
+//prisma client, managing the postgres connection
+const prisma = require("../config/prismaClient");
 
 const { body, validationResult } = require("express-validator");
 
-const authMiddleware = require("../lib/authMiddleware");
-
-const passwordUtils = require("../lib/passwordUtils");
+const passwordUtils = require("../utils/passwordUtils");
 
 // short form, applying try {} catch(err)
 const asyncHandler = require("express-async-handler");
 
 // Display home page
 exports.index = asyncHandler(async (req, res, next) => {
-  // render the "index" view, with the given parameters
-  res.render("index", { title: "Home Page" });
+  res.status(200).json({ msg: "this is the /user endpoint" });
 });
 
 // display register page
@@ -47,7 +44,7 @@ exports.register_post = [
     if (!errors.isEmpty()) {
       // There are errors. Send a message that registration has failed.
 
-      // construct helpful error message
+      // construct helpful error message - optional
       let errorMsg = "";
       errors.array().forEach((element) => {
         errorMsg += element.msg + " ";
@@ -63,15 +60,17 @@ exports.register_post = [
       const salt = saltAndHash.salt;
       const passwordHash = saltAndHash.passwordHash;
 
-      const newUser = new User({
+      const newUser = {
         username: req.body.username,
         hash: passwordHash,
         salt: salt,
-        admin: false,
-      });
+      };
 
       // add the new user to the database
-      newUser.save().then((user) => {
+
+      prisma.user.create({ data: newUser }).then((user) => {
+        console.log("adding new user", user);
+
         // issue a JWT and return it
         const jwt = passwordUtils.issueJWT(user);
 
@@ -89,20 +88,25 @@ exports.register_post = [
 ];
 
 // user requests login page
-// exports.login_get = asyncHandler(async (req, res, next) => {
-//   const form =
-//     '<h1>Login Page</h1><form method="POST" action="/user/login">\
-//   Enter Username:<br><input type="text" name="username">\
-//   <br>Enter Password:<br><input type="password" name="password">\
-//   <br><br><input type="submit" value="Submit"></form>';
-//   res.send(form);
-// });
+exports.login_get = asyncHandler(async (req, res, next) => {
+  const form =
+    '<h1>Login Page</h1><form method="POST" action="/user/login">\
+  Enter Username:<br><input type="text" name="username">\
+  <br>Enter Password:<br><input type="password" name="password">\
+  <br><br><input type="submit" value="Submit"></form>';
+  res.send(form);
+});
 
-// user attempts to login
+// // user attempts to login
 exports.login_post = asyncHandler(
   // if failureRedirect and successRedirect are used above, this next middleware function would not be called
   async (req, res, next) => {
-    User.findOne({ username: req.body.username })
+    prisma.user
+      .findUnique({
+        where: {
+          username: req.body.username,
+        },
+      })
       .then((user) => {
         if (!user) {
           return res
@@ -136,58 +140,3 @@ exports.login_post = asyncHandler(
       });
   }
 );
-
-// request for dashboard page
-exports.dashboard_get = [
-  // passport middleware applies verifyCallback
-  passport.authenticate("jwt", { session: false }),
-  // emits user in response
-  asyncHandler(async (req, res, next) => {
-    User.findOne({ _id: req.user._id })
-      .then((user) => {
-        if (!user) {
-          return res
-            .status(401)
-            .json({ success: false, msg: "Unauthorised: could not find user" });
-        }
-        res.status(200).json({ success: true, data: user });
-      })
-      .catch((err) => {
-        next(err);
-      });
-  }),
-];
-
-// exports.protected_get = [
-//   // passport middleware applies verifyCallback
-//   passport.authenticate("jwt", { session: false }),
-//   asyncHandler((req, res, next) => {
-//     res.status(200).json({
-//       success: true,
-//       msg: "You are successfully authorized to this route!",
-//     });
-//   }),
-// ];
-
-// exports.admin_get = [
-//   // passport middleware applies verifyCallback
-//   passport.authenticate("jwt", { session: false }),
-//   authMiddleware.isAdmin,
-//   asyncHandler((req, res, next) => {
-//     res.status(200).json({
-//       success: true,
-//       msg: "You are successfully authorized to this admin route!",
-//     });
-//   }),
-// ];
-
-// Logout is meaningless in the context of JWT as the session authorization and expiry is held with the client
-// However, it may be helpful to have a process for blacklisting a token.
-// exports.logout_get = asyncHandler(async (req, res, next) => {
-//   req.logout(function (err) {
-//     if (err) {
-//       return next(err);
-//     }
-//     res.redirect("/user/login");
-//   });
-// });

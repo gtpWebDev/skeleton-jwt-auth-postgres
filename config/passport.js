@@ -5,7 +5,9 @@ const JwtStrategy = require("passport-jwt").Strategy;
 // provides options on where in the request to collect the JWT - header, body, cookie, etc.
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 // const LocalStrategy = require("passport-local").Strategy;
-const User = require("../models/userModel");
+// const User = require("../models/userModel");
+
+const prisma = require("../config/prismaClient");
 
 // note, passport documentation is recognised as being poor
 // best location is: https://www.passportjs.org/tutorials/password/
@@ -56,7 +58,9 @@ const verifyCallback = (payload, callback) => {
 
   // NOTE: callback returns a new property user to the second parameter, so it can be used in the middleware stack
 
-  User.findOne({ _id: payload.sub })
+  prisma.user
+    .findOne({ id: payload.sub })
+    // User.findOne({ _id: payload.sub })
     .then((user) => {
       if (!user) {
         return callback(null, false); // no error, but also no username - reject

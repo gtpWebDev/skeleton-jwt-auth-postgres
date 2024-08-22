@@ -13,7 +13,7 @@ require("dotenv").config();
 const app = express();
 
 // Configures the database and opens a global connection that can be used in any module with mongoose.collection
-require("./config/database");
+// require("./config/database");
 
 /**
  * Note, sessions not required because the JWTs themselves provide the continuity
