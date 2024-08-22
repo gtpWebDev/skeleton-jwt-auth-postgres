@@ -1,12 +1,15 @@
-// const { PrismaClient } = require("@prisma/client");
-// const prisma = new PrismaClient();
 const prisma = require("../config/prismaClient");
+
+// This file has not been developed as yet.
+// See populated_mongo.js for the approach taken
 
 async function main() {
   await createSingleRecord();
   await getAllRecords();
 }
 
+// note the disconnect is used because this is a one-off process,
+//  otherwise would allow prisma to manage the connection pool
 main()
   .then(async () => {
     await prisma.$disconnect();

@@ -2,24 +2,17 @@
 
 A template appropriate for publishing a nodejs server with:
 
-- authentication through passport using the JSON Web Token strategy.
-- a postgres database for data storage (at this stage hosted locally)
+- full authentication framework through passport using the JSON Web Token strategy.
+- configuration for a postgres database for data storage (at this stage hosted locally)
 
 Incorporates the following elements:
 
 - Basic project set-up with Vite
 - Testing environment for react
-- Single page app router set-up
-- JSON web token configuration to interact with a separate nodejs back-end
-- Basic components to manage registration, login and viewing a protected dashboard.
+- Basic endpoints to allow login and registration
 
-A skeleton for a JSON web token strategy applied using passport.
-Applies local strategy equivalent to generate salt and hash at registration
-and check the password at login.
-Then issues a JWT for the user, using private-public keys.
-Currently set up to output JSON to a front-end application.
-
-A step-by-step guide which would set-up much of the project is described below, but in using this template, none of the steps need to be carried out, other than:
+A step-by-step guide which would set-up much of the project is described below.
+However, in using this template, the steps do not need to be followed. The only things to do to get up and running are:
 
 1. npm install
 2. create .env, the public and private keys, and add the db strings
@@ -51,7 +44,7 @@ In the directory, install the dependencies
  npm install
 ```
 
-Add **gitignore** and remove node_modules and .env
+Add **.gitignore** and remove node_modules and .env
 
 ```bash
 node_modules
@@ -120,7 +113,7 @@ Note the serverstart option enables console logging
 npm install
 ```
 
-## Install dotenv
+## Install dotenv and set up .env
 
 Install dotenv for environment variable handling, in dev stage at least.
 
@@ -132,13 +125,15 @@ npm install dotenv
 
 Create **.env** and add the following environment variables:
 
-**NOTE: COME BACK TO THIS FOR POSTGRES EQUIVALENT**
+PORT used by bin/www
+NODE_ENV would be used to direct use of the dev and prod databases
+DATABASE_URL is used directly by the prisma schema
+RSA public and private keys enable the JWT authorisation in passport.js
 
 ```bash
 PORT = 3000
 NODE_ENV = "development"
-DB_STRING_DEV = ""
-DB_STRING_PROD = ""
+DATABASE_URL = ""
 RSA_PUBLIC_KEY = ""
 RSA_PRIVATE_KEY = ""
 ```
@@ -174,18 +169,20 @@ npm install express-validator
 ## Authentication
 
 Install **passport** and **passport-jwt** for the application of authenticaition using JWT
-Install **crypto** to generate the salt and hash at registration, and to validate at login
+Install **crypto** and **jsonwebtoken** to generate the salt and hash at registration / generate the JWT at login/registration
 
 ```bash
 npm install passport
-npm install passport-local
 npm install crypto
 npm install passport-jwt
 npm install jsonwebtoken
 ```
 
-The following files and elements represent the authorisation and database setup:
-**app.js** - review thoroughly to ensure comfortable with contents
+## Development of basic functionality
+
+The following files have been created or significantly developed for the template - run through them each very carefully:
+
+**app.js**
 **config/passport.js**
 **routes/indexRoutes.js**
 **routes/userRoutes.js**
@@ -193,9 +190,13 @@ The following files and elements represent the authorisation and database setup:
 **utils/authMiddleware.js**
 **utils/generateKeyPair.js**
 **utils/passwordUtils.js**
-**utils/populatedb.js** - this will need to change a lot for postgres!
+**utils/populatedb_mongo.js** - this is here for reference but not relevant
+**utils/populatedb_mongo.js** - this has not yet been developed
+**utils/populatedb_mongo.js** - this is a useful reference file for prisma queries
 
-Then generate the public and private keys with the following command:
+### Generate the public and private keys for the server secret
+
+Use the follwoing command:
 
 ```bash
 node utils/generateKeyPair
@@ -215,21 +216,16 @@ MIICCgKCAgEApZ3krY0pIX+xGt0VryRqpdEWZaNJsgT5Ea8T/T4jGT85FasNJKRG
 
 ## Setting up the postgres database
 
-Add the Prisma CLI as a development dependency
+Add the Prisma CLI as a development dependency and invoke it
 
 ```bash
 npm install prisma --save-dev
-```
-
-Invoke the Prisma CLI:
-
-```bash
 npx prisma
 ```
 
-### Setup the necessary prisma ORM files manually
+### Setup prisma ORM
 
-The prisma element of the project is setup using the following command, which is safe to use, but because the project already has a .env and .igtignore, will only carry out part of the necessary stages:
+Note, the prisma element of the project is setup using the following command, which is safe to use, but because the project already has a .env and .gitignore, will only carry out part of the necessary stages:
 
 ```bash
 npx prisma init
@@ -237,7 +233,8 @@ npx prisma init
 
 It will setup the prisma directory with the schema file inside **schema.prisma**
 
-The data source in **schema.prisma** will be fine - referring to an environment variable, which should be added to **.env**, with the form below - user and password should be known. mydb in this template will be "skeleton_test"
+The data source in **schema.prisma** will be fine - referring to DATABASE_URL in **.env**.
+For DATABASE_URL, user and password should be known. mydb in this template will be "skeleton_test" to get up and running
 
 ```bash
 # Environment variables declared in this file are automatically made available to Prisma.
@@ -279,13 +276,9 @@ Run the Postgres shell in the terminal:
 psql
 ```
 
-View current databases (letter L not 1!):
+(A useful commands is "\l" to view current databases)
 
-```bash
-\l
-```
-
-Create a database for this project:
+If it doesn't exist, create the skeleton_test database:
 (The semicolons are important in postgres shell!)
 
 ```bash
@@ -306,7 +299,7 @@ Exit out of postgres shell:
 
 ## Create a starting database schema
 
-Update **schema.prisma** to
+Update **schema.prisma** with a simple User table
 
 ```prisma
 generator client {
@@ -327,20 +320,35 @@ model User {
 }
 ```
 
-Then map the data model to the database schema in the client. This does the heavy lifting of updating the database model in postgres to match that of the schema. Check out the migration.sql file for an understanding.
+Then map the data model to the database schema in the client. This does the heavy lifting of updating the database model in postgres to match that of the schema.
+The documentation for migrations is [here](https://www.prisma.io/docs/orm/prisma-migrate/getting-started).
 
-(My interpretation is that **Prisma migrate dev** is used for code driven development, creating the schema, migrating it to a postgres schema, then incrementally amending the prisma schema.)
+Create the first migration:
 
 ```bash
 npx prisma migrate dev --name init
 ```
 
-### Install Prisma Client
+(My interpretation is that **Prisma migrate dev** is used for code driven development, creating the schema, migrating it to a postgres schema, then incrementally amending the prisma schema.)
 
-Note, installing prisma client invokes **prisma generate** which generates a version of the client that is tailored to the models.
+Then similar to git commits, use text for updates
+
+```bash
+npx prisma migrate dev --name usefulupdatetext
+```
+
+(For existing projects, introspect existing databases - see the documentation)
+
+### Install Prisma Client
 
 ```bash
 npm install @prisma/client
 ```
 
-**Now just need to hook up the postgres database to the nodejs application!**
+Note, installing prisma client invokes **prisma generate** which generates a version of the client that is tailored to the models.
+
+Every time the prisma schema is updated, run prisma generate
+
+```bash
+npx prisma generate
+```
