@@ -121,8 +121,6 @@ Install dotenv for environment variable handling, in dev stage at least.
 npm install dotenv
 ```
 
-## Setting up .env
-
 Create **.env** and add the following environment variables:
 
 PORT used by bin/www
@@ -182,19 +180,19 @@ npm install jsonwebtoken
 
 The following files have been created or significantly developed for the template - run through them each very carefully:
 
-**app.js**
-**config/passport.js**
-**routes/indexRoutes.js**
-**routes/userRoutes.js**
-**controllers/userController.js**
-**utils/authMiddleware.js**
-**utils/generateKeyPair.js**
-**utils/passwordUtils.js**
-**utils/populatedb_mongo.js** - this is here for reference but not relevant
-**utils/populatedb_mongo.js** - this has not yet been developed
-**utils/populatedb_mongo.js** - this is a useful reference file for prisma queries
+- **app.js**
+- **config/passport.js**
+- **routes/indexRoutes.js**
+- **routes/userRoutes.js**
+- **controllers/userController.js**
+- **utils/authMiddleware.js**
+- **utils/generateKeyPair.js**
+- **utils/passwordUtils.js**
+- **utils/populatedb_mongo.js** - this is here for reference but not - relevant
+- **utils/populatedb_mongo.js** - this has not yet been developed
+- **utils/populatedb_mongo.js** - this is a useful reference file for prisma queries
 
-### Generate the public and private keys for the server secret
+## Generate the public and private keys for the server secret
 
 Use the follwoing command:
 
@@ -214,7 +212,7 @@ MIICCgKCAgEApZ3krY0pIX+xGt0VryRqpdEWZaNJsgT5Ea8T/T4jGT85FasNJKRG
 
 **Don't forget to delete the generated .pem files!**
 
-## Setting up the postgres database
+## Setting up Prisma ORM for Postgres
 
 Add the Prisma CLI as a development dependency and invoke it
 
@@ -237,35 +235,17 @@ The data source in **schema.prisma** will be fine - referring to DATABASE_URL in
 For DATABASE_URL, user and password should be known. mydb in this template will be "skeleton_test" to get up and running
 
 ```bash
-# Environment variables declared in this file are automatically made available to Prisma.
-# See the documentation for more detail: https://pris.ly/d/prisma-schema#accessing-environment-variables-from-the-schema
-
-# Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
-# See the documentation for all the connection string options: https://pris.ly/d/connection-strings
-
 DATABASE_URL =
   "postgresql://<USER>>:<PASSWORD>>@localhost:5432/<MYDB>?schema=public"
 ```
 
-Prisma provides the following helpful instructions in the CLI:
-
-```bash
-Next steps:
-1. Set the DATABASE_URL in the .env file to point to your existing database. If your database has no tables yet, read https://pris.ly/d/getting-started
-2. Set the provider of the datasource block in schema.prisma to match your database: postgresql, mysql, sqlite, sqlserver, mongodb or cockroachdb.
-3. Run prisma db pull to turn your database schema into a Prisma schema.
-4. Run prisma generate to generate the Prisma Client. You can then start querying your database.
-5. Tip: Explore how you can extend the ORM with scalable connection pooling, global caching, and real-time database events. Read: https://pris.ly/cli/beyond-orm
-
-More information in our documentation:
-https://pris.ly/d/getting-started
-```
+Prisma provides useful instructions in the CLI if you're struggling.
 
 ## Set up a postgres database
 
 Note, the below assumes that postgres is installed. If it isn't, follow the instructions [here](https://www.theodinproject.com/lessons/nodejs-installing-postgresql)
 
-Also, [Odin project link](https://www.theodinproject.com/lessons/nodejs-using-postgresql) has an explanation of how to setup your database locally.
+Also, [Odin](https://www.theodinproject.com/lessons/nodejs-using-postgresql) has an explanation of how to setup your database locally.
 
 For the purposes of the template and just being able to check that everything is setup correctly, we will create or connect to a database called
 **skeleton_test**
@@ -278,8 +258,7 @@ psql
 
 (A useful commands is "\l" to view current databases)
 
-If it doesn't exist, create the skeleton_test database:
-(The semicolons are important in postgres shell!)
+If it doesn't exist, create the skeleton_test database. (The semicolons are important in postgres shell!)
 
 ```bash
 CREATE DATABASE skeleton_test;
@@ -347,7 +326,7 @@ npm install @prisma/client
 
 Note, installing prisma client invokes **prisma generate** which generates a version of the client that is tailored to the models.
 
-Every time the prisma schema is updated, run prisma generate
+Every time the prisma schema is updated, run prisma generate again
 
 ```bash
 npx prisma generate
