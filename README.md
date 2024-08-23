@@ -15,7 +15,8 @@ A step-by-step guide which would set-up much of the project is described below.
 However, in using this template, the steps do not need to be followed. The only things to do to get up and running are:
 
 1. npm install
-2. create .env, the public and private keys, and add the db strings
+2. create the public and private keys for the server secret (detailed in instructions below)
+3. create .env, and add the public and private keys, and db strings
 
 ## Install the express-generator
 
